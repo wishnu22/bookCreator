@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-space-950 text-slate-100 overflow-hidden select-none">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity Physics Engine — Microgravity & Buoyancy Simulation</title>
+  <meta name="description" content="Interactive 60fps GPU-accelerated antigravity physics engine with microgravity fields, fluid cursor dispersion, drag inertia, and zero-G particle dynamics.">
+
+  <!-- Favicons & App Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+  <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Outfit"', 'sans-serif'],
+          },
+          colors: {
+            space: {
+              950: '#07090e',
+              900: '#0c1017',
+              800: '#141a24',
+              700: '#1e2638',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Strict Modern Glassmorphism Specifications */
+    .glass-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.28);
+      box-shadow: 0 25px 50px -10px rgba(16, 185, 129, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.35);
+    }
+
+    /* 60fps GPU acceleration layer */
+    .antigravity-item {
+      will-change: transform;
+      transform-style: preserve-3d;
+      backface-visibility: hidden;
+      touch-action: none;
+    }
+
+    /* Cosmic Grid: Dot mesh + horizontal scan lines */
+    .cosmic-grid {
+      background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 32px 32px, 100% 48px;
+    }
+
+    /* Rotating Gyroscope Icon */
+    @keyframes gyroSpinOuter {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes gyroSpinInner {
+      0% { transform: rotate(360deg) scale(0.85); }
+      100% { transform: rotate(0deg) scale(0.85); }
+    }
+    .animate-gyro-outer {
+      animation: gyroSpinOuter 12s linear infinite;
+    }
+    .animate-gyro-inner {
+      animation: gyroSpinInner 8s linear infinite;
+    }
+
+    /* Monolith Core Core Glow Pulse */
+    @keyframes coreGlowPulse {
+      0%, 100% {
+        box-shadow: 0 0 35px rgba(16, 185, 129, 0.35), inset 0 0 25px rgba(99, 102, 241, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 55px rgba(16, 185, 129, 0.6), 0 0 80px rgba(99, 102, 241, 0.25), inset 0 0 35px rgba(16, 185, 129, 0.5);
+      }
+    }
+    .core-pulse {
+      animation: coreGlowPulse 4s ease-in-out infinite;
+    }
+
+    /* Force Field Cursor Halo */
+    @keyframes cursorFieldPulse {
+      0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.45;
+      }
+      50% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 0.75;
+      }
+    }
+    .cursor-field-anim {
+      animation: cursorFieldPulse 2.8s ease-in-out infinite;
+    }
+
+    /* Custom range input styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      height: 4px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 14px;
+      width: 14px;
+      border-radius: 50%;
+      background: #10b981;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+      transition: transform 0.15s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+  </style>
+</head>
+
+<body class="relative h-screen w-screen bg-space-950 overflow-hidden font-sans">
+
+  <!-- ==================== 1. COSMIC BACKGROUND & AMBIENT LIGHTING ==================== -->
+  <!-- Ambient Dot Mesh & Scan Lines -->
+  <div class="absolute inset-0 pointer-events-none cosmic-grid z-0"></div>
+
+  <!-- Off-Center Multi-Layer Radial Blur Gradients (Emerald, Amber, Indigo) -->
+  <div class="absolute -top-24 -left-24 w-[36rem] h-[36rem] rounded-full bg-emerald-500/12 blur-[140px] pointer-events-none z-0"></div>
+  <div class="absolute top-1/3 -right-28 w-[40rem] h-[40rem] rounded-full bg-indigo-600/14 blur-[140px] pointer-events-none z-0"></div>
+  <div class="absolute -bottom-32 left-1/3 w-[34rem] h-[34rem] rounded-full bg-amber-500/10 blur-[140px] pointer-events-none z-0"></div>
+  <div class="absolute top-2/3 right-1/4 w-[28rem] h-[28rem] rounded-full bg-teal-400/8 blur-[120px] pointer-events-none z-0"></div>
+
+  <!-- HTML5 Canvas Background: Micro-Debris Particles & Fluid Dispersion -->
+  <canvas id="particleCanvas" class="absolute inset-0 pointer-events-none z-10 w-full h-full"></canvas>
+
+  <!-- Dynamic Cursor Force Field Indicator -->
+  <div id="cursorForceField"
+    class="fixed pointer-events-none z-20 w-[500px] h-[500px] rounded-full border border-emerald-400/20 bg-emerald-400/5 transition-opacity duration-300 opacity-0 -translate-x-1/2 -translate-y-1/2 blur-[0.5px] cursor-field-anim">
+    <div class="absolute inset-10 rounded-full border border-dashed border-emerald-400/25"></div>
+    <div class="absolute inset-28 rounded-full border border-emerald-400/15"></div>
+    <div class="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_#34d399]"></div>
+  </div>
+
+  <!-- ==================== 2. HUD HEADER WITH QUICK CONTROLS ==================== -->
+  <header class="relative z-40 max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4 pointer-events-auto">
+    
+    <!-- Branding & Gyro Icon -->
+    <div class="flex items-center gap-3">
+      <div class="relative w-11 h-11 rounded-2xl bg-space-900 border border-slate-700/80 flex items-center justify-center shadow-lg shadow-black/40 overflow-hidden flex-shrink-0">
+        <!-- Outer Gyro Ring -->
+        <svg class="absolute w-7 h-7 text-emerald-400 animate-gyro-outer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke-width="1.8" stroke-dasharray="24" stroke-dashoffset="6"></circle>
+        </svg>
+        <!-- Inner Gyro Ring -->
+        <svg class="absolute w-5 h-5 text-indigo-400 animate-gyro-inner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8" stroke-width="1.8" stroke-dasharray="16" stroke-dashoffset="4"></circle>
+        </svg>
+        <!-- Core Point -->
+        <div class="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_#fff]"></div>
+      </div>
+
+      <div>
+        <div class="flex items-center gap-2">
+          <a href="/" class="text-base sm:text-lg font-bold tracking-tight text-white font-display hover:text-emerald-400 transition-colors">
+            BookCreator.in
+          </a>
+          <span class="text-[10px] uppercase font-mono font-bold tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            Antigravity Engine
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-400 hidden sm:block">
+          Interactive Microgravity Simulation &bull; Drag to lift with zero inertia
+        </p>
+      </div>
+    </div>
+
+    <!-- Active Physics Mode Indicator & Controls -->
+    <div class="flex items-center flex-wrap gap-2.5 sm:gap-3 bg-space-900/85 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800 text-xs shadow-xl">
+      
+      <!-- Mode Segmented Buttons -->
+      <div class="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/5">
+        <button id="btnModeRepel" 
+          class="px-2.5 sm:px-3 py-1.5 rounded-lg font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-all cursor-pointer text-[11px]"
+          title="Antigravity Repulsion Field with Upward Buoyancy">
+          Repel (Antigravity)
+        </button>
+        <button id="btnModeAttract" 
+          class="px-2.5 sm:px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all cursor-pointer text-[11px]"
+          title="Gravitational Attraction Well">
+          Attract (Well)
+        </button>
+        <button id="btnModeFreeFloat" 
+          class="px-2.5 sm:px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all cursor-pointer text-[11px]"
+          title="Pure Zero-G Ambient Float">
+          Free Float
+        </button>
+      </div>
+
+      <!-- Turbulence Slider -->
+      <div class="hidden md:flex items-center gap-2 px-2 py-1 bg-white/5 rounded-xl border border-white/5">
+        <span class="text-[10px] uppercase tracking-wider text-slate-400 font-mono">Turbulence:</span>
+        <input type="range" id="turbulenceSlider" min="0" max="100" value="30" class="w-16 accent-emerald-500">
+        <span id="turbulenceVal" class="text-[11px] font-mono text-emerald-400 w-7 text-right">30%</span>
+      </div>
+
+      <!-- Gravity Toggle Switch -->
+      <button id="btnGravityToggle" 
+        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-[11px] cursor-pointer">
+        <span class="w-2 h-2 rounded-full bg-emerald-400" id="gravityIndicatorDot"></span>
+        <span id="gravityToggleText">Microgravity: ON</span>
+      </button>
+
+      <!-- Reset Equilibrium Button -->
+      <button id="btnResetEquilibrium" 
+        class="px-2.5 py-1.5 rounded-xl text-slate-400 hover:text-amber-400 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer flex items-center gap-1 text-[11px]"
+        title="Reset all elements to neutral floating equilibrium">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span class="hidden lg:inline">Reset</span>
+      </button>
+
+    </div>
+  </header>
+
+  <!-- ==================== 3. MULTI-LAYER INTERACTIVE SIMULATION STAGE ==================== -->
+  <main id="antigravityStage" class="absolute inset-0 z-30 overflow-hidden pointer-events-none">
+
+    <!-- 1. Creator Profile Badge: Ananya Mohan (Top Left) -->
+    <div class="antigravity-item absolute pointer-events-auto cursor-grab active:cursor-grabbing"
+         data-origin-x="14" data-origin-y="18" data-period="7.2" data-phase="0"
+         style="left: 14%; top: 18%;">
+      <div class="glass-card rounded-2xl p-4 w-72 transition-all duration-300">
+        <div class="flex items-center gap-3">
+          <div class="relative w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-teal-400 p-[2px] flex-shrink-0 shadow-md">
+            <div class="w-full h-full rounded-[10px] bg-space-900 flex items-center justify-center font-bold text-amber-300 font-display text-sm">AM</div>
+            <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-space-950 flex items-center justify-center text-[9px] text-white font-bold">✓</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-1">
+              <h3 class="font-bold text-white text-sm truncate font-display">Ananya Mohan</h3>
+              <span class="text-[9px] text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 font-bold">PRO PINNED</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5 truncate">📍 Kochi &bull; Food &amp; Cafe Vlogger</p>
+          </div>
+        </div>
+        <div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-xs text-slate-300">
+          <span>48.2K Followers</span>
+          <span class="font-bold text-emerald-400">₹1,800/Reel</span>
+        </div>
+        <div class="mt-2.5 flex items-center justify-between">
+          <span class="text-[10px] text-slate-400 font-mono">⚡ 5.8% Engagement</span>
+          <span class="text-[10px] text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Direct WhatsApp</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Platform Metric Pill: 0% Commission (Top Center-Right) -->
+    <div class="antigravity-item absolute pointer-events-auto cursor-grab active:cursor-grabbing"
+         data-origin-x="58" data-origin-y="15" data-period="8.4" data-phase="1.5"
+         style="left: 58%; top: 15%;">
+      <div class="glass-card rounded-full py-2.5 px-5 flex items-center gap-3 border-emerald-500/30 shadow-[0_12px_30px_rgba(16,185,129,0.18)]">
+        <span class="relative flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+        </span>
+        <div class="flex items-baseline gap-2">
+          <span class="text-xs font-bold text-white tracking-wide uppercase font-display">0% Agency Cut</span>
+          <span class="text-[11px] text-emerald-300 font-medium hidden sm:inline">&bull; Zero Platform Fee</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Creator Profile Badge: Maya Nair (Mid-Right) -->
+    <div class="antigravity-item absolute pointer-events-auto cursor-grab active:cursor-grabbing"
+         data-origin-x="75" data-origin-y="32" data-period="9.1" data-phase="2.8"
+         style="left: 75%; top: 32%;">
+      <div class="glass-card rounded-2xl p-4 w-68 transition-all duration-300">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center font-bold text-purple-300 font-display flex-shrink-0">
+            MN
+          </div>
+          <div class="min-w-0 flex-1">
+            <h3 class="font-bold text-white text-sm font-display truncate">Maya Nair</h3>
+            <p class="text-xs text-slate-400 truncate">📍 Thrissur &bull; Bridal &amp; Salon</p>
+          </div>
+        </div>
+        <div class="mt-3 flex items-center gap-1.5 flex-wrap">
+          <span class="text-[10px] bg-slate-800/80 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700/60">Bridal Makeup</span>
+          <span class="text-[10px] bg-slate-800/80 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700/60">Saree Draping</span>
+        </div>
+        <div class="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-xs text-slate-300">
+          <span class="text-amber-400 font-semibold">★ 4.9 (14 collabs)</span>
+          <span class="text-emerald-400 font-bold">₹3,500</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Platform Metric Pill: Direct WhatsApp (Center-Left) -->
+    <div class="antigravity-item absolute pointer-events-auto cursor-grab active:cursor-grabbing"
+         data-origin-x="18" data-origin-y="45" data-period="6.9" data-phase="3.6"
+         style="left: 18%; top: 45%;">
+      <div class="glass-card rounded-2xl py-3 px-4 flex items-center gap-3 border-teal-500/30 shadow-lg">
+        <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-white uppercase tracking-wider">Direct WhatsApp Inquiry</p>
+          <p class="text-[11px] text-emerald-400">1-Click Conversation Starter</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Interactive Floating Core: Central Glowing Monolith (Center Stage) -->
+    <div class="antigravity-item absolute pointer-events-auto cursor-grab active:cursor-grabbing"
+         data-origin-x="48" data-origin-y="48" data-period="9.5" data-phase="0.8"
+         style="left: 48%; top: 48%;">
+      <div class="glass-card rounded-3xl p-6 sm:p-7 text-center max-w-xs core-pulse border-emerald-500/40 shadow-2xl relative overflow-hidden group">
+        <!-- Ambient Internal Specular Highlight -->
+        <div class="absolute -top-12 -left-12 w-32 h-32 rounded-full bg-emerald-400/20 blur-xl pointer-events-none"></div>
+        <div class="absolute -bottom-12 -right-12 w-32 h-32 rounded-full bg-indigo-500/20 blur-xl pointer-events-none"></div>
+
+        <div class="relative w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-emerald-400 via-teal-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:scale-105 transition-transform">
+          <svg class="w-7 h-7 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+
+        <h2 class="mt-3.5 text-lg font-extrabold text-white font-display tracking-tight">
+          BookCreator.in
+        </h2>
+        <p class="mt-1 text-xs text-slate-300 leading-relaxed font-normal">
+          Kerala's search-first local creator directory powered by zero-G physics dynamics.
+        </p>
+
+        <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-center gap-3 text-[11px] text-slate-300 font-mono">
+          <span class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            14 Districts
+          </span>
+          <span class="text-slate-600">&bull;</span>
+          <span class="text-emerald-400 font-semibold">Live Simulation</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Creator Profile Badge: Chef Rahul (Lower Left) -->
+    <div class="antigravity-item absolute pointer-events-auto cursor-grab active:cursor-grabbing"
+         data-origin-x="22" data-origin-y="73" data-period="7.6" data-phase="4.2"
+         style="left: 22%; top: 73%;">
+      <div class="glass-card rounded-2xl p-4 w-72 transition-all duration-300">
+        <div class="flex items-center justify-between mb-2">
+          <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 uppercase tracking-wider">
+            Trending Reel
+          </span>
+          <span class="text-xs text-slate-400 font-mono">120K Views</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-400/30 flex items-center justify-center font-bold text-rose-300 font-display flex-shrink-0">
+            CR
+          </div>
+          <div class="min-w-0 flex-1">
+            <h4 class="text-sm font-bold text-white font-display truncate">Chef Rahul</h4>
+            <p class="text-xs text-slate-400 truncate">📍 Calicut &bull; Beach Road Street Food</p>
+          </div>
+        </div>
+        <div class="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-[11px]">
+          <span class="text-teal-400 font-medium">⚡ 2hr turnaround</span>
+          <span class="text-white font-bold">₹2,200</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Platform Metric Pill: 14 Kerala Districts (Lower Center) -->
+    <div class="antigravity-item absolute pointer-events-auto cursor-grab active:cursor-grabbing"
+         data-origin-x="52" data-origin-y="80" data-period="8.8" data-phase="5.1"
+         style="left: 52%; top: 80%;">
+      <div class="glass-card rounded-full py-2.5 px-6 flex items-center gap-3 border-indigo-500/30 shadow-[0_12px_30px_rgba(99,102,241,0.22)]">
+        <svg class="w-4 h-4 text-indigo-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+        </svg>
+        <span class="text-xs font-semibold text-slate-200">14 Kerala Districts Active &bull; Vetted Audience</span>
+      </div>
+    </div>
+
+    <!-- 8. Creator Profile Badge: Sneha & Rohit (Lower Right) -->
+    <div class="antigravity-item absolute pointer-events-auto cursor-grab active:cursor-grabbing"
+         data-origin-x="78" data-origin-y="66" data-period="7.9" data-phase="1.8"
+         style="left: 78%; top: 66%;">
+      <div class="glass-card rounded-2xl p-4 w-72 transition-all duration-300">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center text-teal-300 font-bold font-display flex-shrink-0">
+            SR
+          </div>
+          <div class="min-w-0 flex-1">
+            <h3 class="font-bold text-white text-sm font-display truncate">Sneha &amp; Rohit</h3>
+            <p class="text-xs text-slate-400 truncate">📍 Kochi &amp; Wayanad &bull; Resorts</p>
+          </div>
+        </div>
+        <div class="mt-3 flex items-center justify-between text-xs text-slate-300 pt-2 border-t border-white/10">
+          <span>94.6K Reach</span>
+          <span class="text-emerald-400 font-bold">₹3,200/Reel</span>
+        </div>
+        <div class="mt-2 flex items-center justify-between text-[10px] text-slate-400">
+          <span>★ 4.9 Rating</span>
+          <span class="text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">Verified Analytics</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================== 4. HUD TELEMETRY & STATUS FOOTER ==================== -->
+  <footer class="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 pointer-events-auto w-[92%] max-w-4xl">
+    <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-2.5 rounded-2xl bg-space-900/90 backdrop-blur-xl border border-slate-800 text-xs text-slate-400 shadow-2xl">
+      
+      <!-- Telemetry: Mode & FPS -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-200 font-medium">Mode: <span id="telemetryMode" class="text-emerald-400 font-bold">Repel</span></span>
+        </div>
+        <span class="text-slate-700">|</span>
+        <div class="flex items-center gap-1 font-mono text-[11px]">
+          <span>FPS:</span>
+          <span id="telemetryFps" class="text-emerald-400 font-bold">60</span>
+        </div>
+      </div>
+
+      <!-- Telemetry: Particle & Force Radius -->
+      <div class="hidden sm:flex items-center gap-4 font-mono text-[11px]">
+        <div>
+          <span class="text-slate-500">Particles:</span>
+          <span id="telemetryParticles" class="text-slate-200">75 Active</span>
+        </div>
+        <span class="text-slate-700">|</span>
+        <div>
+          <span class="text-slate-500">Radius:</span>
+          <span class="text-emerald-400">250px</span>
+        </div>
+        <span class="text-slate-700">|</span>
+        <div>
+          <span class="text-slate-500">Buoyancy:</span>
+          <span class="text-emerald-400">-20px</span>
+        </div>
+      </div>
+
+      <!-- Quick Back to Main Portal -->
+      <a href="/" class="text-[11px] font-semibold text-slate-300 hover:text-white flex items-center gap-1 transition-colors">
+        <span>&larr; BookCreator Directory</span>
+      </a>
+
+    </div>
+  </footer>
+
+  <!-- ==================== 5. UNIFIED PHYSICS ENGINE & CANVAS SIMULATION ==================== -->
+  <script>
+    /**
+     * Unified Antigravity Simulation Loop (requestAnimationFrame)
+     * Layer A: Interactive Floating DOM Cards (Buoyancy, Repulsion, Drag-to-Lift, Spring Equilibrium)
+     * Layer B: HTML5 Canvas Ambient Micro-Debris (Brownian Motion, Cursor Wake Dispersion)
+     */
+    (function () {
+      // Configuration & Physical Constants
+      const CONFIG = {
+        fieldRadius: 250,        // Cursor force radius (px)
+        maxRepelForce: 58,       // Max translation displacement in repel mode (px)
+        upwardBuoyancy: 20,      // Negative Y upward antigravity buoyant lift (px)
+        springDamping: 0.085,    // Spring equilibrium restoration factor (k = 0.085)
+        dragLiftScale: 1.08,     // Lift scale multiplier on pointer down
+        dragZIndex: 50,          // Elevated z-index while held
+        particleCount: 75,       // Total ambient micro-debris particles
+        particleWakeRadius: 160  // Fluid cursor wake radius for particles (px)
+      };
+
+      // Engine State
+      const state = {
+        mode: 'repel',           // 'repel' | 'attract' | 'free'
+        microgravity: true,      // true: zero-G active, false: gravity pull down
+        turbulence: 0.30,        // 0.0 to 1.0 multiplier
+        mouseX: -9999,
+        mouseY: -9999,
+        prevMouseX: -9999,
+        prevMouseY: -9999,
+        mouseVelocityX: 0,
+        mouseVelocityY: 0,
+        hasMouse: false,
+        activeDragItem: null,
+        dragOffsetX: 0,
+        dragOffsetY: 0,
+        time: 0,
+        frameCount: 0,
+        lastFpsTime: performance.now(),
+        fps: 60
+      };
+
+      // DOM Elements
+      const stage = document.getElementById('antigravityStage');
+      const cursorIndicator = document.getElementById('cursorForceField');
+      const items = Array.from(document.querySelectorAll('.antigravity-item'));
+      const canvas = document.getElementById('particleCanvas');
+      const ctx = canvas.getContext('2d');
+
+      // HUD Telemetry Elements
+      const telemetryMode = document.getElementById('telemetryMode');
+      const telemetryFps = document.getElementById('telemetryFps');
+      const telemetryParticles = document.getElementById('telemetryParticles');
+      const btnModeRepel = document.getElementById('btnModeRepel');
+      const btnModeAttract = document.getElementById('btnModeAttract');
+      const btnModeFreeFloat = document.getElementById('btnModeFreeFloat');
+      const btnGravityToggle = document.getElementById('btnGravityToggle');
+      const gravityToggleText = document.getElementById('gravityToggleText');
+      const gravityIndicatorDot = document.getElementById('gravityIndicatorDot');
+      const turbulenceSlider = document.getElementById('turbulenceSlider');
+      const turbulenceVal = document.getElementById('turbulenceVal');
+      const btnResetEquilibrium = document.getElementById('btnResetEquilibrium');
+
+      // Resize Canvas to Match Viewport Exactly (Retina crisp)
+      function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        ctx.scale(dpr, dpr);
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      // ==================== LAYER B: CANVAS MICRO-DEBRIS PARTICLES ====================
+      class Particle {
+        constructor() {
+          this.reset(true);
+        }
+
+        reset(initial = false) {
+          this.x = initial ? Math.random() * window.innerWidth : (Math.random() > 0.5 ? 0 : window.innerWidth);
+          this.y = Math.random() * window.innerHeight;
+          // Zero-G Brownian drift vectors: vx, vy in [-0.3, 0.3]
+          this.baseVx = (Math.random() - 0.5) * 0.55;
+          this.baseVy = (Math.random() - 0.5) * 0.55;
+          this.vx = this.baseVx;
+          this.vy = this.baseVy;
+          this.size = Math.random() * 2.2 + 0.8;
+          this.alpha = Math.random() * 0.5 + 0.25;
+          this.type = Math.random() > 0.65 ? 'emerald' : (Math.random() > 0.75 ? 'amber' : 'dust');
+          this.rotation = Math.random() * Math.PI * 2;
+          this.rotSpeed = (Math.random() - 0.5) * 0.02;
+          this.isFragment = Math.random() > 0.8;
+        }
+
+        update() {
+          // Zero-G Brownian micro-jitter scaled by turbulence
+          const jitter = (Math.random() - 0.5) * 0.12 * state.turbulence;
+          this.vx += jitter;
+          this.vy += jitter;
+
+          // Drag friction smoothly decelerates wake displacement back to base drift
+          this.vx = this.vx * 0.965 + this.baseVx * 0.035;
+          this.vy = this.vy * 0.965 + this.baseVy * 0.035;
+
+          // Microgravity toggle influence
+          if (!state.microgravity) {
+            this.vy += 0.08; // Normal gravity pulls particles downward
+          }
+
+          this.x += this.vx;
+          this.y += this.vy;
+          this.rotation += this.rotSpeed;
+
+          // Screen Wrap-Around
+          if (this.x < -10) this.x = window.innerWidth + 10;
+          if (this.x > window.innerWidth + 10) this.x = -10;
+          if (this.y < -10) this.y = window.innerHeight + 10;
+          if (this.y > window.innerHeight + 10) this.y = -10;
+        }
+
+        draw() {
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.rotation);
+
+          if (this.type === 'emerald') {
+            ctx.fillStyle = `rgba(52, 211, 153, ${this.alpha})`;
+            ctx.shadowColor = 'rgba(52, 211, 153, 0.8)';
+            ctx.shadowBlur = 6;
+          } else if (this.type === 'amber') {
+            ctx.fillStyle = `rgba(245, 158, 11, ${this.alpha})`;
+            ctx.shadowColor = 'rgba(245, 158, 11, 0.7)';
+            ctx.shadowBlur = 5;
+          } else {
+            ctx.fillStyle = `rgba(226, 232, 240, ${this.alpha})`;
+            ctx.shadowBlur = 0;
+          }
+
+          if (this.isFragment) {
+            // Metallic geometric fragment diamond
+            ctx.beginPath();
+            ctx.moveTo(0, -this.size * 1.5);
+            ctx.lineTo(this.size * 1.2, 0);
+            ctx.lineTo(0, this.size * 1.5);
+            ctx.lineTo(-this.size * 1.2, 0);
+            ctx.closePath();
+            ctx.fill();
+          } else {
+            // Spherical cosmic mote
+            ctx.beginPath();
+            ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.restore();
+        }
+      }
+
+      // Initialize Particles Pool
+      const particles = [];
+      for (let i = 0; i < CONFIG.particleCount; i++) {
+        particles.push(new Particle());
+      }
+      telemetryParticles.textContent = `${particles.length} Active`;
+
+      // ==================== LAYER A: INTERACTIVE DOM FLOATING CARDS ====================
+      const physicsItems = items.map((el, index) => {
+        const originXPercent = parseFloat(el.getAttribute('data-origin-x')) || 50;
+        const originYPercent = parseFloat(el.getAttribute('data-origin-y')) || 50;
+        const period = parseFloat(el.getAttribute('data-period')) || (7.0 + (index % 4) * 0.8);
+        const phase = parseFloat(el.getAttribute('data-phase')) || (index * 0.8);
+
+        return {
+          el,
+          originXPercent,
+          originYPercent,
+          period,
+          phase,
+          // Physics coordinates & offsets
+          currentX: 0,
+          currentY: 0,
+          targetX: 0,
+          targetY: 0,
+          currentScale: 1,
+          targetScale: 1,
+          currentRotate: 0,
+          targetRotate: 0,
+          // Drag state
+          isDragging: false,
+          dragStartX: 0,
+          dragStartY: 0
+        };
+      });
+
+      // Pointer Tracking & Velocity Calculation
+      window.addEventListener('pointermove', (e) => {
+        if (state.hasMouse) {
+          state.mouseVelocityX = e.clientX - state.mouseX;
+          state.mouseVelocityY = e.clientY - state.mouseY;
+        } else {
+          state.mouseVelocityX = 0;
+          state.mouseVelocityY = 0;
+        }
+
+        state.mouseX = e.clientX;
+        state.mouseY = e.clientY;
+        state.hasMouse = true;
+
+        // Position force field visual indicator
+        cursorIndicator.style.left = `${state.mouseX}px`;
+        cursorIndicator.style.top = `${state.mouseY}px`;
+        cursorIndicator.style.opacity = state.mode === 'free' ? '0.15' : '1';
+
+        // Fluid wake dispersion on canvas particles
+        const wakeSpeed = Math.hypot(state.mouseVelocityX, state.mouseVelocityY);
+        if (wakeSpeed > 1) {
+          particles.forEach((p) => {
+            const dx = p.x - state.mouseX;
+            const dy = p.y - state.mouseY;
+            const dist = Math.hypot(dx, dy);
+
+            if (dist < CONFIG.particleWakeRadius && dist > 1) {
+              const wakeForce = (1 - dist / CONFIG.particleWakeRadius) * Math.min(wakeSpeed * 0.15, 6);
+              p.vx += (dx / dist) * wakeForce + (state.mouseVelocityX * 0.08);
+              p.vy += (dy / dist) * wakeForce + (state.mouseVelocityY * 0.08);
+            }
+          });
+        }
+
+        // Update active drag item position if holding
+        if (state.activeDragItem) {
+          const item = state.activeDragItem;
+          item.targetX = e.clientX - item.dragStartX;
+          item.targetY = e.clientY - item.dragStartY;
+        }
+      }, { passive: true });
+
+      window.addEventListener('pointerleave', () => {
+        state.hasMouse = false;
+        state.mouseX = -9999;
+        state.mouseY = -9999;
+        cursorIndicator.style.opacity = '0';
+      });
+
+      // Pointer Drag Handlers (Lift with Zero Inertia)
+      physicsItems.forEach((item) => {
+        const el = item.el;
+
+        el.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          state.activeDragItem = item;
+          item.isDragging = true;
+          item.dragStartX = e.clientX - item.currentX;
+          item.dragStartY = e.clientY - item.currentY;
+
+          // Lift with zero inertia: immediate scale + elevated shadow
+          item.targetScale = CONFIG.dragLiftScale;
+          item.targetRotate = (Math.random() - 0.5) * 5;
+          el.style.zIndex = CONFIG.dragZIndex;
+
+          const card = el.querySelector('.glass-card');
+          if (card) {
+            card.style.boxShadow = '0 30px 65px -10px rgba(16, 185, 129, 0.45), 0 0 30px rgba(16, 185, 129, 0.35)';
+            card.style.borderColor = 'rgba(52, 211, 153, 0.6)';
+          }
+
+          if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
+        });
+
+        const releaseDrag = (e) => {
+          if (!item.isDragging) return;
+          item.isDragging = false;
+          state.activeDragItem = null;
+
+          // Zero-inertia release: target coordinates return to neutral equilibrium
+          item.targetX = 0;
+          item.targetY = 0;
+          item.targetScale = 1;
+          item.targetRotate = 0;
+          el.style.zIndex = '';
+
+          const card = el.querySelector('.glass-card');
+          if (card) {
+            card.style.boxShadow = '';
+            card.style.borderColor = '';
+          }
+
+          if (el.releasePointerCapture && e.pointerId) {
+            try { el.releasePointerCapture(e.pointerId); } catch (err) {}
+          }
+        };
+
+        el.addEventListener('pointerup', releaseDrag);
+        el.addEventListener('pointercancel', releaseDrag);
+      });
+
+      // Global safety release
+      window.addEventListener('pointerup', () => {
+        if (state.activeDragItem) {
+          state.activeDragItem.isDragging = false;
+          state.activeDragItem.targetX = 0;
+          state.activeDragItem.targetY = 0;
+          state.activeDragItem.targetScale = 1;
+          state.activeDragItem.targetRotate = 0;
+          state.activeDragItem.el.style.zIndex = '';
+          state.activeDragItem = null;
+        }
+      });
+
+      // ==================== HUD INTERACTIVE CONTROLS ====================
+      function setMode(newMode) {
+        state.mode = newMode;
+        btnModeRepel.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all cursor-pointer text-[11px]';
+        btnModeAttract.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all cursor-pointer text-[11px]';
+        btnModeFreeFloat.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all cursor-pointer text-[11px]';
+
+        if (newMode === 'repel') {
+          btnModeRepel.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-all cursor-pointer text-[11px]';
+          telemetryMode.textContent = 'Repel (Antigravity)';
+          telemetryMode.className = 'text-emerald-400 font-bold';
+          cursorIndicator.className = 'fixed pointer-events-none z-20 w-[500px] h-[500px] rounded-full border border-emerald-400/20 bg-emerald-400/5 transition-opacity duration-300 opacity-0 -translate-x-1/2 -translate-y-1/2 blur-[0.5px] cursor-field-anim';
+        } else if (newMode === 'attract') {
+          btnModeAttract.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 transition-all cursor-pointer text-[11px]';
+          telemetryMode.textContent = 'Attract (Gravity Well)';
+          telemetryMode.className = 'text-indigo-400 font-bold';
+          cursorIndicator.className = 'fixed pointer-events-none z-20 w-[500px] h-[500px] rounded-full border border-indigo-400/30 bg-indigo-500/10 transition-opacity duration-300 opacity-0 -translate-x-1/2 -translate-y-1/2 blur-[0.5px] cursor-field-anim';
+        } else {
+          btnModeFreeFloat.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-all cursor-pointer text-[11px]';
+          telemetryMode.textContent = 'Free Float (Zero-G)';
+          telemetryMode.className = 'text-amber-400 font-bold';
+          cursorIndicator.className = 'fixed pointer-events-none z-20 w-[500px] h-[500px] rounded-full border border-amber-400/15 bg-amber-500/5 transition-opacity duration-300 opacity-0 -translate-x-1/2 -translate-y-1/2 blur-[0.5px] cursor-field-anim';
+        }
+      }
+
+      btnModeRepel.addEventListener('click', () => setMode('repel'));
+      btnModeAttract.addEventListener('click', () => setMode('attract'));
+      btnModeFreeFloat.addEventListener('click', () => setMode('free'));
+
+      // Gravity Toggle Switch
+      btnGravityToggle.addEventListener('click', () => {
+        state.microgravity = !state.microgravity;
+        if (state.microgravity) {
+          gravityToggleText.textContent = 'Microgravity: ON';
+          gravityIndicatorDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+          btnGravityToggle.classList.remove('border-rose-500/40');
+        } else {
+          gravityToggleText.textContent = 'Microgravity: OFF (Earth G)';
+          gravityIndicatorDot.className = 'w-2 h-2 rounded-full bg-rose-500';
+          btnGravityToggle.classList.add('border-rose-500/40');
+        }
+      });
+
+      // Turbulence Slider
+      turbulenceSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        state.turbulence = val / 100;
+        turbulenceVal.textContent = `${val}%`;
+      });
+
+      // Reset Equilibrium Button
+      btnResetEquilibrium.addEventListener('click', () => {
+        physicsItems.forEach((item) => {
+          item.targetX = 0;
+          item.targetY = 0;
+          item.targetScale = 1;
+          item.targetRotate = 0;
+          item.isDragging = false;
+        });
+        particles.forEach(p => p.reset(true));
+      });
+
+      // ==================== UNIFIED 60FPS SIMULATION LOOP ====================
+      function simulationTick(currentTime) {
+        state.time = currentTime * 0.001; // Current time in seconds
+
+        // Calculate Smooth Telemetry FPS
+        state.frameCount++;
+        if (currentTime - state.lastFpsTime >= 500) {
+          state.fps = Math.round((state.frameCount * 1000) / (currentTime - state.lastFpsTime));
+          telemetryFps.textContent = state.fps;
+          state.frameCount = 0;
+          state.lastFpsTime = currentTime;
+        }
+
+        // --- LAYER B: RENDER CANVAS MICRO-DEBRIS PARTICLES ---
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update();
+          particles[i].draw();
+        }
+
+        // --- LAYER A: COMPUTE DOM ELEMENT PHYSICS ---
+        physicsItems.forEach((item) => {
+          // If being dragged, directly interpolate current toward mouse target
+          if (item.isDragging) {
+            item.currentX += (item.targetX - item.currentX) * 0.32;
+            item.currentY += (item.targetY - item.currentY) * 0.32;
+            item.currentScale += (item.targetScale - item.currentScale) * 0.25;
+            item.currentRotate += (item.targetRotate - item.currentRotate) * 0.25;
+          } else {
+            // 1. Continuous Sinusoidal Floating Bobbing Calculation
+            // Randomized frequency T in [6.5s, 9.5s], phase offset, micro-rotation ±2deg
+            const omega = (2 * Math.PI) / item.period;
+            const sinusoidalY = Math.sin(state.time * omega + item.phase) * 14;
+            const sinusoidalRotate = Math.cos(state.time * (omega * 0.7) + item.phase) * 1.8;
+
+            // 2. Calculate Center Coordinates in Viewport
+            const rect = item.el.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            let fieldOffsetX = 0;
+            let fieldOffsetY = 0;
+            let fieldRotate = 0;
+            let fieldScale = 1;
+
+            if (state.hasMouse && state.mode !== 'free') {
+              const dx = centerX - state.mouseX;
+              const dy = centerY - state.mouseY;
+              const dist = Math.hypot(dx, dy);
+
+              if (dist < CONFIG.fieldRadius && dist > 1) {
+                // Radial repulsion force inversely proportional to distance: F = (1 - d / R)^1.5 * Fmax
+                const intensity = Math.pow(1 - dist / CONFIG.fieldRadius, 1.5);
+                const angle = Math.atan2(dy, dx);
+
+                if (state.mode === 'repel') {
+                  const pushMagnitude = intensity * CONFIG.maxRepelForce;
+                  fieldOffsetX = Math.cos(angle) * pushMagnitude;
+                  // Upward Buoyancy Factor: -20px * intensity creates buoyant antigravity sensation
+                  fieldOffsetY = Math.sin(angle) * pushMagnitude - (intensity * CONFIG.upwardBuoyancy);
+                  fieldRotate = (dx / CONFIG.fieldRadius) * 6.5;
+                  fieldScale = 1 + intensity * 0.045;
+                } else if (state.mode === 'attract') {
+                  const pullMagnitude = intensity * (CONFIG.maxRepelForce * 0.85);
+                  fieldOffsetX = -Math.cos(angle) * pullMagnitude;
+                  fieldOffsetY = -Math.sin(angle) * pullMagnitude;
+                  fieldRotate = -(dx / CONFIG.fieldRadius) * 5;
+                  fieldScale = 1 - intensity * 0.035;
+                }
+              }
+            }
+
+            // Normal gravity downward sag if microgravity is OFF
+            let gravitySag = 0;
+            if (!state.microgravity) {
+              gravitySag = 24;
+            }
+
+            // Turbulence micro-shake
+            const turbShakeX = (Math.sin(state.time * 8 + item.phase) * 3) * state.turbulence;
+            const turbShakeY = (Math.cos(state.time * 7 + item.phase) * 3) * state.turbulence;
+
+            // Target coordinates combining neutral equilibrium, sinusoidal bob, and force field
+            item.targetX = fieldOffsetX + turbShakeX;
+            item.targetY = sinusoidalY + fieldOffsetY + gravitySag + turbShakeY;
+            item.targetRotate = sinusoidalRotate + fieldRotate;
+            item.targetScale = fieldScale;
+
+            // Spring Equilibrium Damping (k = 0.085)
+            item.currentX += (item.targetX - item.currentX) * CONFIG.springDamping;
+            item.currentY += (item.targetY - item.currentY) * CONFIG.springDamping;
+            item.currentRotate += (item.targetRotate - item.currentRotate) * CONFIG.springDamping;
+            item.currentScale += (item.targetScale - item.currentScale) * CONFIG.springDamping;
+          }
+
+          // Apply 60fps GPU-Accelerated 3D Transform
+          item.el.style.transform = `translate3d(${item.currentX.toFixed(2)}px, ${item.currentY.toFixed(2)}px, 0) rotate(${item.currentRotate.toFixed(2)}deg) scale(${item.currentScale.toFixed(3)})`;
+        });
+
+        requestAnimationFrame(simulationTick);
+      }
+
+      // Start unified simulation loop
+      requestAnimationFrame(simulationTick);
+    })();
+  </script>
+</body>
+</html>
