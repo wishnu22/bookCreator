@@ -63,6 +63,39 @@
       touch-action: none;
     }
 
+    /* Mobile GPU & Compositing Layer Optimizations (@media max-width: 768px) */
+    @media (max-width: 768px) {
+      .glass-card {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(15, 23, 42, 0.96) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+      }
+
+      .antigravity-item {
+        will-change: auto !important;
+        transform-style: flat !important;
+        backface-visibility: visible !important;
+        position: static !important;
+        margin-bottom: 1rem;
+      }
+
+      /* Disable heavy multi-layer blur gradients on mobile */
+      [class*="blur-\[140px\]"],
+      .blur-\[140px\] {
+        display: none !important;
+        filter: none !important;
+      }
+
+      /* Disable heavy GPU-taxing keyframe pulses on mobile */
+      .core-pulse,
+      .cursor-field-anim,
+      .animate-gyro-outer,
+      .animate-gyro-inner {
+        animation: none !important;
+      }
+    }
+
     /* Cosmic Grid: Dot mesh + horizontal scan lines */
     .cosmic-grid {
       background-image: 
@@ -847,7 +880,57 @@
       });
 
       // ==================== UNIFIED 60FPS SIMULATION LOOP ====================
+      // Viewport check: completely disable canvas particles & physics loop on mobile viewports (< 768px)
+      const isMobileViewport = window.innerWidth < 768;
+      let isScrollPaused = false;
+      let scrollPauseTimeout = null;
+      let animFrameId = null;
+
+      if (isMobileViewport) {
+        // Disable canvas to reclaim GPU memory on mobile devices
+        canvas.style.display = 'none';
+        if (telemetryFps) telemetryFps.textContent = 'Off (Mobile)';
+        if (telemetryParticles) telemetryParticles.textContent = '0';
+        physicsItems.forEach(item => {
+          item.el.style.transform = 'none';
+        });
+        return; // Completely terminate physics simulation and canvas rendering on mobile viewports
+      }
+
+      // Automatically pause physics simulation during active scroll events (passive + debounced)
+      window.addEventListener('scroll', () => {
+        isScrollPaused = true;
+        if (scrollPauseTimeout) clearTimeout(scrollPauseTimeout);
+        scrollPauseTimeout = setTimeout(() => {
+          isScrollPaused = false;
+          if (!animFrameId) {
+            animFrameId = requestAnimationFrame(simulationTick);
+          }
+        }, 150);
+      }, { passive: true });
+
+      // Automatically pause simulation when browser tab is inactive / backgrounded
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          isScrollPaused = true;
+          if (animFrameId) {
+            cancelAnimationFrame(animFrameId);
+            animFrameId = null;
+          }
+        } else {
+          isScrollPaused = false;
+          if (!animFrameId) {
+            animFrameId = requestAnimationFrame(simulationTick);
+          }
+        }
+      });
+
       function simulationTick(currentTime) {
+        if (isScrollPaused) {
+          animFrameId = null;
+          return;
+        }
+
         state.time = currentTime * 0.001; // Current time in seconds
 
         // Calculate Smooth Telemetry FPS
@@ -867,6 +950,9 @@
         }
 
         // --- LAYER A: COMPUTE DOM ELEMENT PHYSICS ---
+        // Pass 1 (DOM Reads & Physics calculation - batch reads to eliminate layout thrashing)
+        const computedTransforms = [];
+
         physicsItems.forEach((item) => {
           // If being dragged, directly interpolate current toward mouse target
           if (item.isDragging) {
@@ -876,12 +962,11 @@
             item.currentRotate += (item.targetRotate - item.currentRotate) * 0.25;
           } else {
             // 1. Continuous Sinusoidal Floating Bobbing Calculation
-            // Randomized frequency T in [6.5s, 9.5s], phase offset, micro-rotation ±2deg
             const omega = (2 * Math.PI) / item.period;
             const sinusoidalY = Math.sin(state.time * omega + item.phase) * 14;
             const sinusoidalRotate = Math.cos(state.time * (omega * 0.7) + item.phase) * 1.8;
 
-            // 2. Calculate Center Coordinates in Viewport
+            // 2. Center Coordinates in Viewport (Cached read per item)
             const rect = item.el.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
@@ -897,14 +982,12 @@
               const dist = Math.hypot(dx, dy);
 
               if (dist < CONFIG.fieldRadius && dist > 1) {
-                // Radial repulsion force inversely proportional to distance: F = (1 - d / R)^1.5 * Fmax
                 const intensity = Math.pow(1 - dist / CONFIG.fieldRadius, 1.5);
                 const angle = Math.atan2(dy, dx);
 
                 if (state.mode === 'repel') {
                   const pushMagnitude = intensity * CONFIG.maxRepelForce;
                   fieldOffsetX = Math.cos(angle) * pushMagnitude;
-                  // Upward Buoyancy Factor: -20px * intensity creates buoyant antigravity sensation
                   fieldOffsetY = Math.sin(angle) * pushMagnitude - (intensity * CONFIG.upwardBuoyancy);
                   fieldRotate = (dx / CONFIG.fieldRadius) * 6.5;
                   fieldScale = 1 + intensity * 0.045;
@@ -941,15 +1024,22 @@
             item.currentScale += (item.targetScale - item.currentScale) * CONFIG.springDamping;
           }
 
-          // Apply 60fps GPU-Accelerated 3D Transform
-          item.el.style.transform = `translate3d(${item.currentX.toFixed(2)}px, ${item.currentY.toFixed(2)}px, 0) rotate(${item.currentRotate.toFixed(2)}deg) scale(${item.currentScale.toFixed(3)})`;
+          computedTransforms.push({
+            el: item.el,
+            transform: `translate3d(${item.currentX.toFixed(2)}px, ${item.currentY.toFixed(2)}px, 0) rotate(${item.currentRotate.toFixed(2)}deg) scale(${item.currentScale.toFixed(3)})`
+          });
         });
 
-        requestAnimationFrame(simulationTick);
+        // Pass 2 (DOM Writes - Batched to prevent forced synchronous reflow / layout thrashing)
+        for (let j = 0; j < computedTransforms.length; j++) {
+          computedTransforms[j].el.style.transform = computedTransforms[j].transform;
+        }
+
+        animFrameId = requestAnimationFrame(simulationTick);
       }
 
-      // Start unified simulation loop
-      requestAnimationFrame(simulationTick);
+      // Start unified simulation loop on desktop viewports
+      animFrameId = requestAnimationFrame(simulationTick);
     })();
   </script>
 </body>
