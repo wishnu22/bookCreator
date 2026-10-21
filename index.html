@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <!-- Primary Meta Tags -->
   <title>BookCreator.in — Discover &amp; Book Top Local Creators in Kerala</title>
   <meta name="title" content="BookCreator.in — Discover &amp; Book Top Local Creators in Kerala">
@@ -227,10 +227,16 @@
   <style>
     :root {
       color-scheme: light;
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
     }
 
     html {
       background-color: #f8fafc;
+      overflow-x: hidden;
+      max-width: 100vw;
     }
 
     body {
@@ -238,6 +244,7 @@
       color: #0F172A;
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       overflow-x: hidden;
+      max-width: 100vw;
     }
 
     /* Custom Scrollbar */
@@ -259,16 +266,20 @@
       background: #94A3B8;
     }
 
-    /* Minimum touch targets */
+    /* Minimum touch targets (WCAG 2.5.5 AAA Compliance) */
     .touch-target {
       min-height: 44px;
       min-width: 44px;
+    }
+
+    button.touch-target,
+    a.touch-target {
       display: inline-flex;
       align-items: center;
       justify-content: center;
     }
 
-    /* Hide scrollbars for pill bars */
+    /* Hide scrollbars for pill bars & smooth momentum scrolling */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -276,10 +287,27 @@
     .no-scrollbar {
       -ms-overflow-style: none;
       scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
     }
 
-    /* ==================== MOBILE GPU & COMPOSITING LAYER OPTIMIZATIONS (@media max-width: 768px) ==================== */
+    /* Safe Area Insets Helpers for Modern Notched & Home Bar Devices */
+    .pb-safe {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+    }
+
+    .pt-safe {
+      padding-top: max(0.5rem, env(safe-area-inset-top, 0.5rem));
+    }
+
+    /* ==================== MULTI-DEVICE RESPONSIVENESS & GPU OPTIMIZATIONS (@media max-width: 768px) ==================== */
     @media (max-width: 768px) {
+      /* Prevent iOS Safari auto-zoom on input focus by guaranteeing 16px minimum font size */
+      input,
+      select,
+      textarea {
+        font-size: 16px !important;
+      }
+
       /* 1. Disable expensive ambient background blur filters on mobile to eliminate GPU texture thrashing */
       .ambient-blur-glow {
         display: none !important;
@@ -320,7 +348,8 @@
 
       #shortlist-backdrop,
       #joinModal,
-      #pitchModal {
+      #pitch-modal,
+      #report-modal {
         background-color: rgba(0, 0, 0, 0.65) !important;
       }
 
@@ -397,18 +426,18 @@
 
   <!-- ==================== 1. TOP ANNOUNCEMENT BAR ==================== -->
   <aside
-    class="relative z-20 bg-slate-900 text-slate-300 text-xs py-2 px-4 border-b border-slate-800"
+    class="relative z-20 bg-slate-900 text-slate-300 text-xs py-2 px-3 sm:px-4 border-b border-slate-800 pt-safe"
     aria-label="Announcement">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <span
-          class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+          class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex-shrink-0">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping mr-1"></span> Live in Kerala
         </span>
         <span class="hidden sm:inline text-slate-300">Book vetted local creators with transparent rates &amp; zero commission.</span>
-        <span class="sm:hidden text-slate-300">0% Commission Local Creator Directory.</span>
+        <span class="sm:hidden text-slate-300 text-[11px]">0% Commission Local Creator Directory.</span>
       </div>
-      <div class="flex items-center gap-4 text-slate-400 text-[11px]">
+      <div class="flex items-center gap-3 sm:gap-4 text-slate-400 text-[11px]">
         <span class="hidden md:flex items-center gap-1 text-slate-300 font-medium">
           <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -430,34 +459,34 @@
 
   <!-- ==================== 2. HEADER ==================== -->
   <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
 
       <!-- Brand Wordmark -->
-      <a href="#" class="group focus:outline-none">
-        <div class="flex items-center gap-2.5">
+      <a href="#" class="group focus:outline-none flex-shrink-0">
+        <div class="flex items-center gap-2 sm:gap-2.5">
           <!-- Brand Icon -->
-          <div class="w-9 h-9 rounded-xl bg-slate-950 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform flex-shrink-0">
-            <img src="favicon.png" alt="BookCreator" width="20" height="20" loading="lazy" decoding="async" class="w-5 h-5 object-contain" />
+          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-950 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform flex-shrink-0">
+            <img src="favicon.png" alt="BookCreator" width="20" height="20" loading="lazy" decoding="async" class="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
           </div>
           <!-- Clean Wordmark -->
           <div class="flex items-baseline">
-            <span class="text-base font-bold tracking-tight text-slate-950">BookCreator</span>
-            <span class="text-sm font-semibold text-slate-600">.in</span>
+            <span class="text-sm sm:text-base font-bold tracking-tight text-slate-950">BookCreator</span>
+            <span class="text-xs sm:text-sm font-semibold text-slate-600">.in</span>
           </div>
         </div>
       </a>
 
       <!-- Header Actions -->
-      <div class="flex items-center gap-2 sm:gap-3">
+      <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
         <!-- Language Switcher -->
-        <button id="btn-lang-toggle" class="touch-target px-2.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center gap-1 transition-all cursor-pointer" title="Switch language / ഭാഷ മാറ്റുക">
+        <button id="btn-lang-toggle" class="touch-target px-2 sm:px-2.5 py-1.5 h-9 sm:h-10 rounded-xl text-xs font-bold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center gap-1 transition-all cursor-pointer" title="Switch language / ഭാഷ മാറ്റുക">
           <span class="text-[11px] font-extrabold text-emerald-700">🌐</span>
-          <span id="lang-current-label">മലയാളം</span>
+          <span id="lang-current-label" class="text-[11px] sm:text-xs">മലയാളം</span>
         </button>
 
         <!-- Shortlist Header Button -->
-        <button id="btn-open-shortlist-nav" class="touch-target px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-black bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer" title="View campaign shortlist">
-          <svg class="w-3.5 h-3.5 text-rose-500 fill-current" viewBox="0 0 24 24">
+        <button id="btn-open-shortlist-nav" class="touch-target px-2 sm:px-3 py-1.5 sm:py-2 h-9 sm:h-10 rounded-xl text-xs font-semibold text-slate-700 hover:text-black bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1 sm:gap-1.5 cursor-pointer" title="View campaign shortlist">
+          <svg class="w-3.5 h-3.5 text-rose-500 fill-current flex-shrink-0" viewBox="0 0 24 24">
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
           </svg>
           <span class="hidden sm:inline" data-i18n="shortlist">Shortlist</span> (<span id="header-shortlist-count">0</span>)
@@ -470,11 +499,12 @@
         </div>
 
         <!-- Single Prominent Join as Creator CTA -->
-        <button id="btnOpenJoinModal" class="h-10 px-4 text-xs font-semibold rounded-xl bg-slate-950 text-white hover:bg-slate-800 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
-          <svg class="w-3.5 h-3.5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button id="btnOpenJoinModal" class="h-9 sm:h-10 px-2.5 sm:px-4 text-xs font-semibold rounded-xl bg-slate-950 text-white hover:bg-slate-800 transition-all shadow-sm flex items-center gap-1 sm:gap-1.5 cursor-pointer flex-shrink-0">
+          <svg class="w-3.5 h-3.5 text-teal-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
           </svg>
-          <span data-i18n="listAsCreator">List as Creator</span>
+          <span class="hidden sm:inline" data-i18n="listAsCreator">List as Creator</span>
+          <span class="sm:hidden font-bold" data-i18n="listAsCreatorMobile">Join</span>
         </button>
       </div>
 
@@ -482,26 +512,27 @@
   </header>
 
   <!-- ==================== 3. HERO SECTION ==================== -->
-  <section class="relative z-10 pt-10 sm:pt-14 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+  <section class="relative z-10 pt-6 sm:pt-14 pb-4 sm:pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
     <div class="max-w-3xl text-left">
 
       <!-- District indicator -->
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs text-slate-600 mb-4 font-medium shadow-sm">
-        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-        <span>Kerala Local Influencer Discovery • Cafes, Dining, Salons &amp; Boutiques</span>
+      <div class="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-[11px] sm:text-xs text-slate-600 mb-3 sm:mb-4 font-medium shadow-sm max-w-full">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
+        <span class="hidden sm:inline">Kerala Local Influencer Discovery • Cafes, Dining, Salons &amp; Boutiques</span>
+        <span class="sm:hidden truncate">Kerala Local Creator Discovery</span>
       </div>
 
       <!-- Main Headline & Subtitle -->
-      <h1 id="hero-main-title" class="text-3xl sm:text-5xl font-bold tracking-tight text-slate-950 leading-[1.14]">
+      <h1 id="hero-main-title" class="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-950 leading-[1.18] sm:leading-[1.14]">
         Book vetted local creators. Zero agency fees.
       </h1>
 
-      <p id="hero-sub-title" class="mt-3.5 text-slate-500 text-sm sm:text-base leading-relaxed">
+      <p id="hero-sub-title" class="mt-2.5 sm:mt-3.5 text-slate-500 text-xs sm:text-base leading-relaxed">
         Connect directly with food, cafe, and salon vloggers across Kerala. Direct WhatsApp inquiries with transparent deliverables.
       </p>
 
       <!-- Trust Badges Row -->
-      <div class="mt-5 flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-slate-500">
+      <div class="mt-4 sm:mt-5 flex flex-wrap items-center gap-2.5 sm:gap-4 text-[11px] sm:text-xs text-slate-500">
         <span class="inline-flex items-center gap-1.5 font-medium text-slate-700">
           <svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -528,16 +559,16 @@
   </section>
 
   <!-- ==================== 4. AMERICAN-STYLE SEARCH & FILTER ==================== -->
-  <section class="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4" id="sticky-filter-bar">
+  <section class="relative z-30 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-4" id="sticky-filter-bar">
     
     <!-- Floating Filter Container: Frosted Glass American-Style Card -->
-    <div class="p-3 bg-white/85 backdrop-blur-md border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_14px_35px_rgb(0,0,0,0.08)] rounded-2xl space-y-3 transition-all duration-200">
+    <div class="p-2.5 sm:p-3.5 bg-white/85 backdrop-blur-md border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_14px_35px_rgb(0,0,0,0.08)] rounded-2xl space-y-2.5 sm:space-y-3 transition-all duration-200">
       
       <!-- Input Row: Keyword Search + State + District + Budget + Sort -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 items-center">
+      <div class="grid grid-cols-2 lg:grid-cols-12 gap-2 sm:gap-2.5 items-center">
 
         <!-- 1. Keyword search input with magnifying glass -->
-        <div class="sm:col-span-2 lg:col-span-4 relative bg-slate-50 border border-slate-200/60 rounded-xl focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all">
+        <div class="col-span-2 lg:col-span-4 relative bg-slate-50 border border-slate-200/60 rounded-xl focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all">
           <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -545,7 +576,7 @@
             </svg>
           </div>
           <input type="text" id="search-input" placeholder="Search by creator name, @handle, cafe, niche..."
-            class="w-full pl-10 pr-9 py-2.5 bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:outline-none touch-target"
+            class="w-full pl-10 pr-9 py-2.5 bg-transparent text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none touch-target"
             autocomplete="off" aria-label="Search creators">
           <button id="search-clear-btn"
             class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-black"
@@ -557,19 +588,19 @@
         </div>
 
         <!-- 2. State Selector -->
-        <div class="sm:col-span-1 lg:col-span-2 relative bg-slate-50 border border-slate-200/60 rounded-xl focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="col-span-1 lg:col-span-2 relative bg-slate-50 border border-slate-200/60 rounded-xl focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all">
+          <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none text-slate-400">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
               </path>
             </svg>
           </div>
           <select id="stateSelect"
-            class="w-full pl-8 pr-7 py-2.5 bg-transparent text-xs sm:text-sm text-slate-800 font-medium appearance-none cursor-pointer focus:outline-none touch-target"
+            class="w-full pl-7 sm:pl-8 pr-6 sm:pr-7 py-2.5 bg-transparent text-xs sm:text-sm text-slate-800 font-medium appearance-none cursor-pointer focus:outline-none touch-target truncate"
             aria-label="Select State">
           </select>
-          <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+          <div class="absolute inset-y-0 right-0 pr-2 sm:pr-2.5 flex items-center pointer-events-none text-slate-400">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
@@ -577,9 +608,9 @@
         </div>
 
         <!-- 3. District Selector -->
-        <div class="sm:col-span-1 lg:col-span-2 relative bg-slate-50 border border-slate-200/60 rounded-xl focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="col-span-1 lg:col-span-2 relative bg-slate-50 border border-slate-200/60 rounded-xl focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all">
+          <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none text-slate-400">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -587,10 +618,10 @@
             </svg>
           </div>
           <select id="districtSelect"
-            class="w-full pl-8 pr-7 py-2.5 bg-transparent text-xs sm:text-sm text-slate-800 font-medium appearance-none cursor-pointer focus:outline-none touch-target"
+            class="w-full pl-7 sm:pl-8 pr-6 sm:pr-7 py-2.5 bg-transparent text-xs sm:text-sm text-slate-800 font-medium appearance-none cursor-pointer focus:outline-none touch-target truncate"
             aria-label="Select District">
           </select>
-          <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+          <div class="absolute inset-y-0 right-0 pr-2 sm:pr-2.5 flex items-center pointer-events-none text-slate-400">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
@@ -598,12 +629,12 @@
         </div>
 
         <!-- 4. Budget Tier Dropdown -->
-        <div class="sm:col-span-1 lg:col-span-2 relative bg-slate-50 border border-slate-200/60 rounded-xl focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 font-bold text-xs">
+        <div class="col-span-1 lg:col-span-2 relative bg-slate-50 border border-slate-200/60 rounded-xl focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all">
+          <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none text-slate-500 font-bold text-xs">
             ₹
           </div>
           <select id="budgetSelect"
-            class="w-full pl-7 pr-7 py-2.5 bg-transparent text-xs sm:text-sm text-slate-800 font-medium appearance-none cursor-pointer focus:outline-none touch-target"
+            class="w-full pl-6 sm:pl-7 pr-6 sm:pr-7 py-2.5 bg-transparent text-xs sm:text-sm text-slate-800 font-medium appearance-none cursor-pointer focus:outline-none touch-target truncate"
             aria-label="Filter by Budget Cap">
             <option value="all">Any Budget</option>
             <option value="under-2k">Under ₹2,000</option>
@@ -613,7 +644,7 @@
             <option value="35k-100k">₹35,000 – ₹1,00,000</option>
             <option value="above-100k">₹1,00,000+</option>
           </select>
-          <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+          <div class="absolute inset-y-0 right-0 pr-2 sm:pr-2.5 flex items-center pointer-events-none text-slate-400">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
@@ -621,9 +652,9 @@
         </div>
 
         <!-- 5. Sort select -->
-        <div class="sm:col-span-1 lg:col-span-2 relative bg-slate-50 border border-slate-200/60 rounded-xl focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all">
+        <div class="col-span-1 lg:col-span-2 relative bg-slate-50 border border-slate-200/60 rounded-xl focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all">
           <select id="sort-select"
-            class="w-full px-3 pr-7 py-2.5 bg-transparent text-xs text-slate-800 font-medium appearance-none cursor-pointer focus:outline-none touch-target"
+            class="w-full pl-2.5 sm:px-3 pr-6 sm:pr-7 py-2.5 bg-transparent text-xs text-slate-800 font-medium appearance-none cursor-pointer focus:outline-none touch-target truncate"
             aria-label="Sort creators">
             <option value="recommended">⚡ Recommended</option>
             <option value="followers-desc">Followers: High to Low</option>
@@ -631,7 +662,7 @@
             <option value="price-asc">Price: Low to High</option>
             <option value="price-desc">Price: High to Low</option>
           </select>
-          <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+          <div class="absolute inset-y-0 right-0 pr-2 sm:pr-2.5 flex items-center pointer-events-none text-slate-400">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
@@ -641,59 +672,61 @@
       </div>
 
       <!-- Bottom Row: Category Pills + Reset Filters info -->
-      <div class="flex flex-wrap items-center justify-between gap-2.5 pt-1 border-t border-slate-100">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-2.5 pt-1.5 border-t border-slate-100">
 
-        <!-- Category Pills (Horizontal scrollable with no scrollbar) -->
-        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5" id="category-chips-container"
+        <!-- Category Pills (Horizontal scrollable with smooth touch momentum) -->
+        <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 min-w-0 w-full sm:w-auto -mx-0.5 px-0.5" id="category-chips-container"
           role="tablist" aria-label="Filter by Niche">
           <button data-category="All"
-            class="category-chip active bg-black text-white text-xs font-semibold px-3.5 py-1.5 rounded-full shadow-sm whitespace-nowrap transition-all"
+            class="category-chip active bg-black text-white text-xs font-semibold px-3 sm:px-3.5 py-1.5 rounded-full shadow-sm whitespace-nowrap transition-all flex-shrink-0"
             role="tab" aria-selected="true">
             All Niches
           </button>
           <button data-category="Food & Cafes"
-            class="category-chip bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all"
+            class="category-chip bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium px-3 sm:px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all flex-shrink-0"
             role="tab" aria-selected="false">
             🍔 Food &amp; Cafes
           </button>
           <button data-category="Salon & Beauty"
-            class="category-chip bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all"
+            class="category-chip bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium px-3 sm:px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all flex-shrink-0"
             role="tab" aria-selected="false">
             💄 Salon &amp; Beauty
           </button>
           <button data-category="Fashion"
-            class="category-chip bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all"
+            class="category-chip bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium px-3 sm:px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all flex-shrink-0"
             role="tab" aria-selected="false">
             👗 Fashion
           </button>
           <button data-category="Tech & Autos"
-            class="category-chip bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all"
+            class="category-chip bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium px-3 sm:px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all flex-shrink-0"
             role="tab" aria-selected="false">
             🚗 Tech &amp; Autos
           </button>
           <button data-category="Fitness"
-            class="category-chip bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all"
+            class="category-chip bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium px-3 sm:px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all flex-shrink-0"
             role="tab" aria-selected="false">
             ⚡ Fitness
           </button>
         </div>
 
         <!-- Reset & Results Info -->
-        <div class="flex items-center gap-3 text-xs text-slate-500 ml-auto">
+        <div class="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 text-xs text-slate-500 w-full sm:w-auto pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100/70 sm:ml-auto">
           <span id="results-count-text" class="font-medium text-slate-700">Showing creators</span>
-          <button id="btn-share-search"
-            class="text-slate-700 hover:text-black font-semibold cursor-pointer inline-flex items-center gap-1 transition-colors"
-            title="Copy link to current search &amp; filter view">
-            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-            </svg>
-            <span>Share Search</span>
-          </button>
-          <button id="reset-filters-btn"
-            class="hidden text-black underline font-semibold cursor-pointer hover:text-slate-700 transition-colors"
-            title="Clear all active filters">
-            Reset Filters
-          </button>
+          <div class="flex items-center gap-2.5">
+            <button id="btn-share-search"
+              class="text-slate-700 hover:text-black font-semibold cursor-pointer inline-flex items-center gap-1 transition-colors"
+              title="Copy link to current search &amp; filter view">
+              <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+              </svg>
+              <span>Share Search</span>
+            </button>
+            <button id="reset-filters-btn"
+              class="hidden text-black underline font-semibold cursor-pointer hover:text-slate-700 transition-colors"
+              title="Clear all active filters">
+              Reset Filters
+            </button>
+          </div>
         </div>
 
       </div>
@@ -702,12 +735,12 @@
   </section>
 
   <!-- ==================== 5. MAIN CONTENT / CREATOR GRID ==================== -->
-  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+  <main class="flex-grow max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 w-full">
     <h2 class="sr-only">Verified Kerala Creator Directory</h2>
 
     <!-- Notice Bar -->
     <div
-      class="mb-6 p-4 rounded-2xl bg-white/85 backdrop-blur-md border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-wrap items-center justify-between gap-3 text-xs">
+      class="mb-5 sm:mb-6 p-3.5 sm:p-4 rounded-2xl bg-white/85 backdrop-blur-md border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-wrap items-center justify-between gap-3 text-xs">
       <div class="flex items-center gap-3">
         <img src="assets/bookcreator_icon.png" alt="BookCreator Logo" width="28" height="28" loading="lazy" decoding="async" class="w-7 h-7 rounded-lg shadow-sm object-cover flex-shrink-0">
         <div>
@@ -715,17 +748,17 @@
           <span class="text-slate-600 ml-1">Direct WhatsApp inquiries with zero agency cuts and verified local audience stats.</span>
         </div>
       </div>
-      <div class="flex items-center gap-3">
-        <span class="text-slate-400 hidden sm:inline">Are you a creator in Kerala?</span>
+      <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+        <span class="text-slate-500">Are you a creator in Kerala?</span>
         <button id="btn-hero-list"
-          class="text-xs font-bold text-black hover:underline cursor-pointer">
+          class="text-xs font-bold text-black hover:underline cursor-pointer px-2.5 py-1 rounded-lg bg-slate-100 sm:bg-transparent hover:bg-slate-200 sm:hover:bg-transparent transition-colors">
           Get Listed &rarr;
         </button>
       </div>
     </div>
 
-    <!-- Creator Grid -->
-    <div id="creator-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+    <!-- Creator Grid (1 col on mobile, 2 col on tablet/landscape, 3 col on laptop, 4 col on desktop) -->
+    <div id="creator-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
       aria-live="polite">
       <!-- Cards dynamically injected via JavaScript -->
     </div>
@@ -895,24 +928,24 @@
 
   <!-- ==================== 6. CREATOR ONBOARDING MODAL ==================== -->
   <div id="joinModal"
-    class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-5"
+    class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/60 backdrop-blur-md flex items-center justify-center p-2.5 sm:p-5"
     role="dialog" aria-modal="true" aria-labelledby="modal-headline">
     <div
-      class="relative w-full max-w-2xl bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden my-6 max-h-[92vh] flex flex-col transform transition-all duration-300">
+      class="relative w-full max-w-2xl bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col transform transition-all duration-300">
 
       <!-- Modal Header -->
       <div
-        class="p-5 sm:p-6 border-b border-slate-100 bg-slate-50/70 flex items-start justify-between gap-4">
-        <div class="flex items-center gap-3.5">
-          <img src="assets/bookcreator_icon.png" alt="BookCreator Logo" width="40" height="40" loading="lazy" decoding="async" class="w-10 h-10 rounded-xl shadow-sm object-cover flex-shrink-0">
+        class="p-4 sm:p-6 border-b border-slate-100 bg-slate-50/70 flex items-start justify-between gap-3 sm:gap-4">
+        <div class="flex items-center gap-3 sm:gap-3.5">
+          <img src="assets/bookcreator_icon.png" alt="BookCreator Logo" width="40" height="40" loading="lazy" decoding="async" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shadow-sm object-cover flex-shrink-0">
           <div>
-            <div class="flex items-center gap-2 mb-1">
+            <div class="flex items-center gap-1.5 sm:gap-2 mb-1">
               <span
                 class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-black text-white">Creator
                 Onboarding</span>
-              <span class="text-xs text-slate-500 font-medium">0% Commission Directory</span>
+              <span class="text-[11px] sm:text-xs text-slate-500 font-medium">0% Commission Directory</span>
             </div>
-            <h2 id="modal-headline" class="font-display font-bold text-xl sm:text-2xl text-slate-900">List Your Profile on
+            <h2 id="modal-headline" class="font-display font-bold text-lg sm:text-2xl text-slate-900 leading-snug">List Your Profile on
               BookCreator</h2>
             <p class="text-xs sm:text-sm text-slate-500 mt-0.5 font-medium">
               Get discovered directly by local Kerala cafes, salons, and shops.
@@ -920,7 +953,7 @@
           </div>
         </div>
         <button id="btn-close-modal"
-          class="touch-target text-slate-400 hover:text-black p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+          class="touch-target text-slate-400 hover:text-black p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer flex-shrink-0"
           title="Close modal" aria-label="Close modal">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -929,7 +962,7 @@
       </div>
 
       <!-- Modal Body (Scrollable) -->
-      <div class="p-5 sm:p-6 overflow-y-auto space-y-6 flex-grow">
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-5 sm:space-y-6 flex-grow">
 
         <!-- Instant Confirmation State (Shown after submit) -->
         <div id="joinModalSuccess" class="hidden py-8 px-4 sm:px-8 text-center space-y-5">
@@ -1182,13 +1215,13 @@
                 <div class="text-xs text-slate-500 text-center sm:text-left">
                   🔒 100% direct client enquiries. Zero platform commission.
                 </div>
-                <div class="flex items-center gap-3 w-full sm:w-auto">
+                <div class="flex flex-col-reverse sm:flex-row items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
                   <button type="button" id="btn-cancel-modal"
-                    class="touch-target w-1/2 sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:text-black bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">
+                    class="touch-target w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:text-black bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer text-center">
                     Cancel
                   </button>
                   <button type="submit" id="btn-submit-listing"
-                    class="touch-target w-1/2 sm:w-auto px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-slate-950 hover:bg-slate-800 transition-all cursor-pointer shadow-sm flex items-center justify-center gap-1.5">
+                    class="touch-target w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-slate-950 hover:bg-slate-800 transition-all cursor-pointer shadow-sm flex items-center justify-center gap-1.5 text-center">
                     <span id="btn-submit-listing-text">⚡ Pay ₹500 &amp; Activate Verified PRO</span>
                   </button>
                 </div>
@@ -1205,26 +1238,26 @@
 
   <!-- ==================== 7. PITCH GENERATOR MODAL ==================== -->
   <div id="pitch-modal"
-    class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" role="dialog"
+    class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto" role="dialog"
     aria-modal="true" aria-labelledby="pitch-title">
-    <div class="relative w-full max-w-lg bg-white border border-slate-200 rounded-2xl shadow-2xl p-6">
+    <div class="relative w-full max-w-lg bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 sm:p-6 my-auto max-h-[94vh] flex flex-col overflow-y-auto">
 
       <div class="flex items-start justify-between gap-3 mb-4">
-        <div class="flex items-center gap-3.5">
-          <img src="assets/bookcreator_icon.png" alt="BookCreator Logo" width="40" height="40" loading="lazy" decoding="async" class="w-10 h-10 rounded-xl shadow-sm object-cover flex-shrink-0">
+        <div class="flex items-center gap-3 sm:gap-3.5">
+          <img src="assets/bookcreator_icon.png" alt="BookCreator Logo" width="40" height="40" loading="lazy" decoding="async" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shadow-sm object-cover flex-shrink-0">
           <div>
-            <div class="flex items-center gap-2 mb-1">
+            <div class="flex items-center gap-1.5 sm:gap-2 mb-1">
               <span
                 class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-200">1-Click
                 Outreach Pitch</span>
               <span class="text-[11px] text-slate-500 font-medium">Direct WhatsApp Collab</span>
             </div>
-            <h3 id="pitch-title" class="font-display font-bold text-xl text-slate-900 mt-1">Collab Pitch for <span
+            <h3 id="pitch-title" class="font-display font-bold text-lg sm:text-xl text-slate-900 mt-0.5 leading-snug">Collab Pitch for <span
                 id="pitch-creator-name" class="text-black">Creator</span></h3>
             <div id="pitch-creator-links" class="mt-1 flex items-center gap-2 text-xs"></div>
           </div>
         </div>
-        <button id="btn-close-pitch" class="touch-target text-slate-400 hover:text-black p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer"
+        <button id="btn-close-pitch" class="touch-target text-slate-400 hover:text-black p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer flex-shrink-0"
           aria-label="Close pitch modal">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -1236,14 +1269,14 @@
         <div>
           <label for="pitch-biz-name" class="block text-xs font-semibold text-slate-700 mb-1">Your Business Name</label>
           <input type="text" id="pitch-biz-name" value="The Fig Tree Cafe &amp; Bakery"
-            class="w-full px-3 py-2 bg-slate-50 text-xs text-slate-900 rounded-lg border border-slate-200 focus:border-black focus:outline-none">
+            class="w-full px-3 py-2.5 bg-slate-50 text-xs sm:text-sm text-slate-900 rounded-lg border border-slate-200 focus:border-black focus:outline-none">
         </div>
 
         <div>
           <label for="pitch-biz-city" class="block text-xs font-semibold text-slate-700 mb-1">Your City /
             Location</label>
           <input type="text" id="pitch-biz-city" value="East Fort, Thrissur"
-            class="w-full px-3 py-2 bg-slate-50 text-xs text-slate-900 rounded-lg border border-slate-200 focus:border-black focus:outline-none">
+            class="w-full px-3 py-2.5 bg-slate-50 text-xs sm:text-sm text-slate-900 rounded-lg border border-slate-200 focus:border-black focus:outline-none">
         </div>
 
         <div>
@@ -1252,9 +1285,9 @@
               Send)</label>
             <div class="flex gap-2">
               <button id="pitch-lang-en"
-                class="text-[10px] font-bold px-2 py-0.5 rounded bg-black text-white cursor-pointer">English</button>
+                class="text-[10px] font-bold px-2.5 py-1 rounded bg-black text-white cursor-pointer">English</button>
               <button id="pitch-lang-ml"
-                class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">Manglish</button>
+                class="text-[10px] font-bold px-2.5 py-1 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">Manglish</button>
             </div>
           </div>
           <textarea id="pitch-text-preview" rows="5"
@@ -1262,9 +1295,9 @@
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-3 pt-2">
+      <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 sm:gap-3 pt-2 w-full">
         <button id="btn-copy-pitch"
-          class="touch-target px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer">
+          class="touch-target w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer text-center">
           <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3">
@@ -1273,7 +1306,7 @@
           <span id="copy-pitch-label">Copy Pitch</span>
         </button>
         <a id="btn-send-whatsapp-pitch" href="#" target="_blank"
-          class="touch-target px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-black hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-sm cursor-pointer">
+          class="touch-target w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-black hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer text-center">
           <svg class="w-4 h-4 fill-current text-emerald-400" viewBox="0 0 24 24">
             <path
               d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
@@ -1287,20 +1320,20 @@
 
   <!-- ==================== 7B. REPORT CREATOR MODAL ==================== -->
   <div id="report-modal"
-    class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" role="dialog"
+    class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto" role="dialog"
     aria-modal="true" aria-labelledby="report-modal-title">
-    <div class="relative w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-2xl p-6">
+    <div class="relative w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 sm:p-6 my-auto max-h-[94vh] flex flex-col overflow-y-auto">
       <div class="flex items-start justify-between gap-3 mb-4">
         <div>
           <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">
             Community Integrity
           </span>
-          <h3 id="report-modal-title" class="font-display font-bold text-lg text-slate-900 mt-1">
+          <h3 id="report-modal-title" class="font-display font-bold text-base sm:text-lg text-slate-900 mt-1 leading-snug">
             Report Listing: <span id="report-creator-name" class="text-black">Creator</span>
           </h3>
           <p class="text-xs text-slate-500 mt-0.5">Help keep BookCreator authentic and trustworthy.</p>
         </div>
-        <button id="btn-close-report" class="touch-target text-slate-400 hover:text-black p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer" aria-label="Close report modal">
+        <button id="btn-close-report" class="touch-target text-slate-400 hover:text-black p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer flex-shrink-0" aria-label="Close report modal">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
@@ -1310,7 +1343,7 @@
         
         <div>
           <label for="report-reason" class="block text-xs font-semibold text-slate-700 mb-1">Reason for Report *</label>
-          <select id="report-reason" required class="w-full px-3 py-2.5 bg-slate-50 text-xs text-slate-900 rounded-xl border border-slate-200 focus:border-black focus:outline-none touch-target">
+          <select id="report-reason" required class="w-full px-3 py-2.5 bg-slate-50 text-xs sm:text-sm text-slate-900 rounded-xl border border-slate-200 focus:border-black focus:outline-none touch-target">
             <option value="inactive_whatsapp">WhatsApp number inactive or unresponsive</option>
             <option value="incorrect_rates">Quoted rates much higher than listed package</option>
             <option value="fake_metrics">Suspected fake follower count or bot views</option>
@@ -1327,14 +1360,14 @@
 
         <div>
           <label for="report-contact" class="block text-xs font-semibold text-slate-700 mb-1">Your Email or WhatsApp (for case update)</label>
-          <input type="text" id="report-contact" placeholder="e.g. 98470 12345 or business@gmail.com" class="w-full px-3 py-2 bg-slate-50 text-xs text-slate-900 rounded-xl border border-slate-200 focus:border-black focus:outline-none">
+          <input type="text" id="report-contact" placeholder="e.g. 98470 12345 or business@gmail.com" class="w-full px-3 py-2 bg-slate-50 text-xs sm:text-sm text-slate-900 rounded-xl border border-slate-200 focus:border-black focus:outline-none">
         </div>
 
-        <div class="pt-2 flex items-center justify-end gap-2.5">
-          <button type="button" id="btn-cancel-report" class="touch-target px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">
+        <div class="pt-2 flex flex-col-reverse sm:flex-row items-center justify-end gap-2 sm:gap-2.5 w-full">
+          <button type="button" id="btn-cancel-report" class="touch-target w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer text-center">
             Cancel
           </button>
-          <button type="submit" class="touch-target px-5 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors shadow-sm cursor-pointer">
+          <button type="submit" class="touch-target w-full sm:w-auto px-5 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors shadow-sm cursor-pointer text-center">
             Submit Report
           </button>
         </div>
@@ -1346,13 +1379,13 @@
   <div id="shortlist-drawer"
     class="fixed inset-y-0 right-0 z-50 w-full sm:w-96 bg-white border-l border-slate-200 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col"
     role="dialog" aria-modal="true" aria-labelledby="shortlist-title">
-    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+    <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
       <div class="flex items-center gap-2">
         <svg class="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 24 24">
           <path
             d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
         </svg>
-        <h3 id="shortlist-title" class="font-display font-bold text-lg text-slate-900">Campaign Shortlist</h3>
+        <h3 id="shortlist-title" class="font-display font-bold text-base sm:text-lg text-slate-900">Campaign Shortlist</h3>
       </div>
       <button id="btn-close-shortlist" class="touch-target text-slate-400 hover:text-black p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer"
         aria-label="Close shortlist drawer">
@@ -1367,8 +1400,8 @@
       <!-- Injected via JS -->
     </div>
 
-    <!-- Shortlist Footer -->
-    <div class="p-4 border-t border-slate-100 bg-slate-50 space-y-2.5">
+    <!-- Shortlist Footer (with safe-area bottom padding) -->
+    <div class="p-4 border-t border-slate-100 bg-slate-50 space-y-2.5 pb-safe">
       <div class="flex items-center justify-between text-xs text-slate-600">
         <span>Estimated Combined Budget:</span>
         <span id="shortlist-total-budget" class="font-extrabold text-slate-900 text-sm">₹0</span>
@@ -1396,7 +1429,7 @@
   <div id="shortlist-backdrop" class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm hidden"></div>
 
   <!-- ==================== 9. TOAST NOTIFICATION CONTAINER ==================== -->
-  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"
+  <div id="toast-container" class="fixed bottom-5 left-4 right-4 sm:left-auto sm:right-5 z-50 flex flex-col gap-2 sm:max-w-sm pointer-events-none"
     aria-live="polite"></div>
 
   <!-- ==================== 10. FOOTER ==================== -->
@@ -2799,12 +2832,12 @@
       const avgViewsDisplay = creator.avgViewsDisplay || creator.avgViews || (typeof creator.avgViewsCount === 'number' ? formatNumber(creator.avgViewsCount) : '0');
 
       return `
-        <div class="creator-card group relative flex flex-col justify-between bg-white/85 sm:backdrop-blur-md border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_14px_35px_rgb(0,0,0,0.08)] hover:border-slate-300/80 rounded-2xl p-5 transition-all duration-200" id="card-${creator.id}">
+        <div class="creator-card group relative flex flex-col justify-between bg-white/85 sm:backdrop-blur-md border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_14px_35px_rgb(0,0,0,0.08)] hover:border-slate-300/80 rounded-2xl p-4 sm:p-5 transition-all duration-200" id="card-${creator.id}">
           
           <!-- Bookmark Heart Button (Top Right) -->
           <button 
             onclick="toggleShortlist('${creator.id}')" 
-            class="absolute top-4 right-4 z-10 touch-target w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${isShortlisted ? 'text-rose-600 bg-rose-50 border border-rose-200 shadow-sm' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}"
+            class="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-10 touch-target w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${isShortlisted ? 'text-rose-600 bg-rose-50 border border-rose-200 shadow-sm' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}"
             title="${isShortlisted ? 'Remove from campaign shortlist' : 'Add to campaign shortlist'}"
             aria-label="Bookmark creator"
           >
@@ -2816,7 +2849,7 @@
           <!-- Top Row: Avatar, Handles & Badges -->
           <div>
             ${sampleBadge}
-            <div class="flex items-start gap-3.5 mb-3 pr-8">
+            <div class="flex items-start gap-3 sm:gap-3.5 mb-3 pr-8">
               <div class="relative flex-shrink-0">
                 <img 
                   src="${displayAvatar}" 
@@ -2826,7 +2859,7 @@
                   loading="lazy"
                   decoding="async"
                   onerror="this.onerror=null; this.src='${avatarFallback}';"
-                  class="w-14 h-14 rounded-full object-cover border border-slate-200 group-hover:border-slate-300 transition-colors"
+                  class="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border border-slate-200 group-hover:border-slate-300 transition-colors"
                 />
                 ${activeDot}
               </div>
@@ -2913,24 +2946,24 @@
             </button>
 
             <!-- Secondary Channels Row: Instagram & Collab Pitch & YouTube -->
-            <div class="grid ${youtubeUrl ? 'grid-cols-3' : 'grid-cols-2'} gap-1.5 mb-2.5">
+            <div class="grid ${youtubeUrl ? 'grid-cols-3' : 'grid-cols-2'} gap-1 sm:gap-1.5 mb-2.5">
               <a 
                 href="${instaUrl}" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                class="touch-target py-2 px-2 rounded-lg text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 transition-colors flex items-center justify-center gap-1 active:scale-95"
+                class="touch-target py-2 px-1.5 sm:px-2 rounded-lg text-[10.5px] sm:text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 transition-colors flex items-center justify-center gap-1 active:scale-95"
                 title="View Instagram profile"
               >
                 <svg class="w-3 h-3 fill-current text-pink-600 flex-shrink-0" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                <span>IG Profile</span>
+                <span class="truncate">Instagram</span>
               </a>
 
               <button 
                 onclick="openPitchModal('${creator.id}')"
-                class="touch-target py-2 px-2 rounded-lg text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 transition-colors flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
+                class="touch-target py-2 px-1.5 sm:px-2 rounded-lg text-[10.5px] sm:text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 transition-colors flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
                 title="Create a tailored collaboration pitch"
               >
-                <span>⚡ Pitch</span>
+                <span class="truncate">⚡ Pitch</span>
               </button>
 
               ${youtubeUrl ? `
@@ -2938,11 +2971,11 @@
                   href="${youtubeUrl}" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  class="touch-target py-2 px-2 rounded-lg text-[11px] font-semibold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200/60 transition-colors flex items-center justify-center gap-1 active:scale-95"
+                  class="touch-target py-2 px-1.5 sm:px-2 rounded-lg text-[10.5px] sm:text-[11px] font-semibold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200/60 transition-colors flex items-center justify-center gap-1 active:scale-95"
                   title="Watch on YouTube"
                 >
                   <svg class="w-3 h-3 fill-current text-red-600 flex-shrink-0" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                  <span>YouTube</span>
+                  <span class="truncate">YouTube</span>
                 </a>
               ` : ''}
             </div>
@@ -3284,6 +3317,8 @@
         shortlist: "Shortlist",
         starting_at: "Starting at",
         message_whatsapp: "Message on WhatsApp",
+        listAsCreator: "List as Creator",
+        listAsCreatorMobile: "Join",
       },
       ml: {
         lang_btn: "English",
@@ -3296,6 +3331,8 @@
         shortlist: "ഷോർട്ട്‌ലിസ്റ്റ്",
         starting_at: "ആരംഭിക്കുന്നത്",
         message_whatsapp: "WhatsApp-ൽ ബന്ധപ്പെടുക",
+        listAsCreator: "ലിസ്റ്റ് ചെയ്യാം",
+        listAsCreatorMobile: "ചേരുക",
       }
     };
 
