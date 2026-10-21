@@ -524,19 +524,13 @@
       </a>
 
       <!-- Header Actions -->
-      <div class="flex items-center gap-1 sm:gap-2.5 flex-shrink-0">
-        <!-- Language Switcher -->
-        <button id="btn-lang-toggle" class="touch-target px-1.5 sm:px-2.5 py-1 sm:py-1.5 h-8 sm:h-10 rounded-xl text-[11px] sm:text-xs font-bold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center gap-1 transition-all cursor-pointer" title="Switch language / ഭാഷ മാറ്റുക">
-          <span class="text-[11px] font-extrabold text-emerald-700">🌐</span>
-          <span id="lang-current-label" class="hidden min-[370px]:inline text-[10.5px] sm:text-xs">മലയാളം</span>
-        </button>
-
+      <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
         <!-- Shortlist Header Button -->
-        <button id="btn-open-shortlist-nav" class="touch-target px-1.5 sm:px-3 py-1 sm:py-2 h-8 sm:h-10 rounded-xl text-[11px] sm:text-xs font-semibold text-slate-700 hover:text-black bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1 sm:gap-1.5 cursor-pointer" title="View campaign shortlist">
+        <button id="btn-open-shortlist-nav" class="touch-target px-2.5 sm:px-3 py-1.5 sm:py-2 h-9 sm:h-10 rounded-xl text-xs font-semibold text-slate-700 hover:text-black bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1 sm:gap-1.5 cursor-pointer" title="View campaign shortlist">
           <svg class="w-3.5 h-3.5 text-rose-500 fill-current flex-shrink-0" viewBox="0 0 24 24">
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
           </svg>
-          <span class="hidden sm:inline" data-i18n="shortlist">Shortlist</span> (<span id="header-shortlist-count">0</span>)
+          <span class="hidden sm:inline">Shortlist</span> (<span id="header-shortlist-count">0</span>)
         </button>
 
         <!-- Quick stats preview on desktop -->
@@ -546,12 +540,12 @@
         </div>
 
         <!-- Single Prominent Join as Creator CTA -->
-        <button id="btnOpenJoinModal" class="h-8 sm:h-10 px-2 sm:px-4 text-xs font-semibold rounded-xl bg-slate-950 text-white hover:bg-slate-800 transition-all shadow-sm flex items-center gap-1 sm:gap-1.5 cursor-pointer flex-shrink-0">
+        <button id="btnOpenJoinModal" class="h-9 sm:h-10 px-3 sm:px-4 text-xs font-semibold rounded-xl bg-slate-950 text-white hover:bg-slate-800 transition-all shadow-sm flex items-center gap-1 sm:gap-1.5 cursor-pointer flex-shrink-0">
           <svg class="w-3.5 h-3.5 text-teal-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
           </svg>
-          <span class="hidden sm:inline" data-i18n="listAsCreator">List as Creator</span>
-          <span class="sm:hidden font-bold" data-i18n="listAsCreatorMobile">Join</span>
+          <span class="hidden sm:inline">List as Creator</span>
+          <span class="sm:hidden font-bold">Join</span>
         </button>
       </div>
 
@@ -2980,7 +2974,7 @@
           <!-- Bottom Row: Price & CTAs -->
           <div>
             <div class="flex items-baseline justify-between pt-2 border-t border-slate-100 mb-2.5">
-              <span class="text-xs text-slate-600 font-medium" data-i18n="starting_at">Starting at</span>
+              <span class="text-xs text-slate-600 font-medium">Starting at</span>
               <span class="text-base font-extrabold text-slate-950">${typeof formatCurrency === 'function' ? formatCurrency(creator.startingPrice) : `₹${creator.startingPrice}`}</span>
             </div>
 
@@ -2991,7 +2985,7 @@
               title="Direct WhatsApp Inquiry with Lead Tracking"
             >
               <svg class="w-4 h-4 fill-current text-white flex-shrink-0" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-              <span data-i18n="message_whatsapp">Message on WhatsApp</span>
+              <span>Message on WhatsApp</span>
             </button>
 
             <!-- Secondary Channels Row: Instagram & Collab Pitch & YouTube -->
@@ -3353,71 +3347,7 @@
       showToast("Thank you. Report received and dispatched for review.", "success");
     }
 
-    // Multilingual Localization (English & Malayalam)
-    const TRANSLATIONS = {
-      en: {
-        lang_btn: "മലയാളം",
-        hero_title: "Book vetted local creators. Zero agency fees.",
-        hero_subtitle: "Connect directly with food, cafe, and salon vloggers across Kerala. Direct WhatsApp inquiries with transparent deliverables.",
-        search_placeholder: "Search creator name, @handle, niche, or district...",
-        filter_all_districts: "All Kerala",
-        filter_all_categories: "All",
-        share_search: "Share Search",
-        shortlist: "Shortlist",
-        starting_at: "Starting at",
-        message_whatsapp: "Message on WhatsApp",
-        listAsCreator: "List as Creator",
-        listAsCreatorMobile: "Join",
-      },
-      ml: {
-        lang_btn: "English",
-        hero_title: "കേരളത്തിലെ ലോക്കൽ ക്രിയേറ്റർമാരെ നേരിട്ട് WhatsApp വഴി ബുക്ക് ചെയ്യാം.",
-        hero_subtitle: "കൊച്ചി, കോഴിക്കോട്, തിരുവനന്തപുരം എന്നിവിടങ്ങളിലെ കഫേകൾ, ബോട്ടിക്കുകൾ എന്നിവർക്കായി യഥാർത്ഥ റീച്ചുള്ള ക്രിയേറ്റർമാരുടെ ഡയറക്ടറി. ഇടനിലക്കാരില്ലാതെ നേരിട്ട് സംസാരിക്കാം.",
-        search_placeholder: "പേര്, @handle, കാറ്റഗറി, അല്ലെങ്കിൽ ജില്ല തിരയുക...",
-        filter_all_districts: "കേരളം മുഴുവൻ",
-        filter_all_categories: "എല്ലാം",
-        share_search: "സെർച്ച് ഷെയർ ചെയ്യുക",
-        shortlist: "ഷോർട്ട്‌ലിസ്റ്റ്",
-        starting_at: "ആരംഭിക്കുന്നത്",
-        message_whatsapp: "WhatsApp-ൽ ബന്ധപ്പെടുക",
-        listAsCreator: "ലിസ്റ്റ് ചെയ്യാം",
-        listAsCreatorMobile: "ചേരുക",
-      }
-    };
 
-    function setLanguage(lang) {
-      state.currentLang = lang;
-      try {
-        localStorage.setItem("bookcreator_lang", lang);
-      } catch (e) {}
-
-      const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
-      const langLabel = document.getElementById("lang-current-label");
-      if (langLabel) langLabel.textContent = t.lang_btn;
-
-      const heroTitle = document.getElementById("hero-main-title");
-      if (heroTitle) heroTitle.textContent = t.hero_title;
-
-      const heroSub = document.getElementById("hero-sub-title");
-      if (heroSub) heroSub.textContent = t.hero_subtitle;
-
-      const searchInput = document.getElementById("search-input");
-      if (searchInput) searchInput.placeholder = t.search_placeholder;
-
-      document.querySelectorAll("[data-i18n]").forEach(el => {
-        const key = el.getAttribute("data-i18n");
-        if (t[key]) el.textContent = t[key];
-      });
-
-      renderCreatorGrid();
-      trackAnalyticsEvent('language_changed', { lang });
-    }
-
-    function toggleLanguage() {
-      const nextLang = (state.currentLang === "ml") ? "en" : "ml";
-      setLanguage(nextLang);
-      showToast(nextLang === "ml" ? "മലയാളം പതിപ്പിലേക്ക് മാറ്റി" : "Switched to English", "info");
-    }
 
     // Onboarding Form Live Validation & Quality Checklist
     function updateOnboardingChecklist() {
@@ -4258,9 +4188,6 @@
       const shareShortlistWaBtn = document.getElementById("btn-share-shortlist-whatsapp");
       if (shareShortlistWaBtn) shareShortlistWaBtn.addEventListener("click", shareShortlistViaWhatsApp);
 
-      // Language Switcher
-      const langToggleBtn = document.getElementById("btn-lang-toggle");
-      if (langToggleBtn) langToggleBtn.addEventListener("click", toggleLanguage);
 
       // Share Search Button
       const shareSearchBtn = document.getElementById("btn-share-search");
@@ -4404,12 +4331,8 @@
       updateShortlistBadge();
       updateOnboardingChecklist();
 
-      // Restore saved language preference if any
       try {
-        const savedLang = localStorage.getItem("bookcreator_lang");
-        if (savedLang && savedLang !== "en") {
-          setLanguage(savedLang);
-        }
+        localStorage.removeItem("bookcreator_lang");
       } catch (e) {}
 
       initLiveActivityTicker();
